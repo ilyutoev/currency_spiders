@@ -1,20 +1,19 @@
-from sqlalchemy import create_engine, Column, Integer, String, Date, DateTime, Text, Float, ForeignKey, relationship
+from sqlalchemy import create_engine, Column, Integer, String, Date, DateTime, Float, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref
-from spiders import settings
+from sqlalchemy.orm.session import sessionmaker
+from sqlalchemy.engine.url import URL
+import settings
 
 DeclarativeBase = declarative_base()
 
 
 def db_connect():
-    return create_engine("postgresql+psycopg2://{}:{}@localhost:port/{}".format(settings.DB_USER,
-                                                                                settings.DB_PASSWORD,
-                                                                                settings.DB_NAME),
-                         encoding='utf8', echo=False)
+    return create_engine(URL(**settings.DATABASE), client_encoding='utf8', encoding='utf8', echo=False)
 
 
-def create_tables(engine):
-    """"""
+def create_tables():
+    engine = db_connect()
     DeclarativeBase.metadata.create_all(engine)
 
 
@@ -23,6 +22,18 @@ class Bank(DeclarativeBase):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
+
+    def create(bank_id=None, bank_name=None):
+        engine = db_connect()
+        Session = sessionmaker(bind=engine)
+        session = Session()
+        if bank_id:
+            check_bank = session.query(Bank.id).filter(Bank.id==bank_id).first()
+            if not check_bank:
+                session.add(Bank(id=bank_id, name=bank_name))
+                session.commit()
+                print('bank item created')
+        session.close()
 
 
 class BankOffice(DeclarativeBase):
