@@ -67,7 +67,8 @@ class ExchangeRate(DeclarativeBase):
 
         rate = session.query(ExchangeRate).filter(ExchangeRate.date == item['date'],
                                                   ExchangeRate.bank_id == item['bank_id'],
-                                                  ExchangeRate.currency == item['currency']).first()
+                                                  ExchangeRate.currency == item['currency'],
+                                                  ExchangeRate.type == item['type']).first()
         if rate:
             if rate.rate != item['rate']:
                 rate.rate = item['rate']
