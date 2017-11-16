@@ -23,6 +23,7 @@ class Bank(DeclarativeBase):
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
 
+    @staticmethod
     def create(bank_id=None, bank_name=None):
         engine = db_connect()
         Session = sessionmaker(bind=engine)
@@ -57,3 +58,23 @@ class ExchangeRate(DeclarativeBase):
 
     bank_id = Column(Integer, ForeignKey('bank.id'), nullable=False)
     bank = relationship('Bank', backref=backref('rates', lazy=True))
+
+    @staticmethod
+    def create(item):
+        engine = db_connect()
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        rate = session.query(ExchangeRate).filter(ExchangeRate.date == item['date'],
+                                                  ExchangeRate.bank_id == item['bank_id'],
+                                                  ExchangeRate.currency == item['currency']).first()
+        if rate:
+            if rate.rate != item['rate']:
+                rate.rate = item['rate']
+            rate.scraping_date = item['scraping_date']
+            session.add(rate)
+        else:
+            temp = ExchangeRate(**item)
+            session.add(temp)
+        session.commit()
+        session.close()
