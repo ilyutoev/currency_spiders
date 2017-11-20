@@ -1,4 +1,5 @@
-from sqlalchemy import create_engine, Column, Integer, String, Date, DateTime, Float, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Date, DateTime, ForeignKey, Numeric
+from sqlalchemy.sql import exists, and_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.session import sessionmaker
@@ -6,15 +7,6 @@ from sqlalchemy.engine.url import URL
 import settings
 
 DeclarativeBase = declarative_base()
-
-
-def db_connect():
-    return create_engine(URL(**settings.DATABASE), client_encoding='utf8', encoding='utf8', echo=False)
-
-
-def create_tables():
-    engine = db_connect()
-    DeclarativeBase.metadata.create_all(engine)
 
 
 class Bank(DeclarativeBase):
@@ -29,7 +21,8 @@ class Bank(DeclarativeBase):
         Session = sessionmaker(bind=engine)
         session = Session()
         if bank_id:
-            check_bank = session.query(Bank.id).filter(Bank.id==bank_id).first()
+            check_bank = session.query(exists().where(Bank.id==bank_id)).scalar()
+
             if not check_bank:
                 session.add(Bank(id=bank_id, name=bank_name))
                 session.commit()
@@ -52,7 +45,7 @@ class ExchangeRate(DeclarativeBase):
     id = Column(Integer, primary_key=True)
     currency = Column(String(3), index=True)
     type = Column(String(4), index=True)
-    rate = Column(Float)
+    rate = Column(Numeric(7, 4), index=True)
     date = Column(Date, index=True)
     scraping_date = Column(DateTime, index=True)
 
@@ -65,17 +58,22 @@ class ExchangeRate(DeclarativeBase):
         Session = sessionmaker(bind=engine)
         session = Session()
 
-        rate = session.query(ExchangeRate).filter(ExchangeRate.date == item['date'],
-                                                  ExchangeRate.bank_id == item['bank_id'],
-                                                  ExchangeRate.currency == item['currency'],
-                                                  ExchangeRate.type == item['type']).first()
-        if rate:
-            if rate.rate != item['rate']:
-                rate.rate = item['rate']
-            rate.scraping_date = item['scraping_date']
-            session.add(rate)
-        else:
+        rate = session.query(exists().where(and_(ExchangeRate.date==item['date'],
+                                            ExchangeRate.bank_id==item['bank_id'],
+                                            ExchangeRate.currency==item['currency'],
+                                            ExchangeRate.type==item['type']))).scalar()
+
+        if not rate:
             temp = ExchangeRate(**item)
             session.add(temp)
-        session.commit()
+            session.commit()
         session.close()
+
+
+def db_connect():
+    return create_engine(URL(**settings.DATABASE), client_encoding='utf8', encoding='utf8', echo=False)
+
+
+def create_tables():
+    engine = db_connect()
+    DeclarativeBase.metadata.create_all(engine)

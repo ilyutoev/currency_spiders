@@ -1,35 +1,37 @@
 # -*- coding: utf-8 -*-
-from models import create_tables, Bank, ExchangeRate
 from datetime import date, datetime
-from grab import Grab
+from decimal import Decimal
+
+from models import create_tables, Bank
+from tools import process_request, process_response
 
 
-create_tables()
-bank_id = 1
-Bank.create(bank_id=bank_id, bank_name="Центробанк")
+if __name__ == '__main__':
+    create_tables()
+    bank_id = 1
+    Bank.create(bank_id=bank_id, bank_name="Центробанк")
 
-today = date.today()
-url = 'http://www.cbr.ru/scripts/XML_daily.asp?date_req={}/{}/{}'.format(today.day, today.month, today.year)
-g = Grab()
+    today = date.today()
+    url = 'http://www.cbr.ru/scripts/XML_daily.asp?date_req={}/{}/{}'.format(today.day, today.month, today.year)
 
-try:
-    g.go(url)
-except Exception as e:
-    pass
-    # TODO обработка ошибок
+    response = process_request(url)
 
-usd_item = {'currency': 'u'}
-usd_item['bank_id'] = bank_id
-rate_date = g.doc.select('//valcurs').attr('date')
-usd_item['date'] = datetime.strptime(rate_date, '%d.%m.%Y')
-usd_item['rate'] = float(g.doc.select('//valute[@id="R01235"]/value').text().replace(',', '.'))
-usd_item['scraping_date'] = datetime.now()
-ExchangeRate.create(usd_item)
+    if response:
+        if response.doc('//valcurs').exists():
+            rate_date = response.doc.select('//valcurs').attr('date')
+            rate_date = datetime.strptime(rate_date, '%d.%m.%Y')
+        else:
+            print('No rate date on the page')
 
-eur_item = {'currency': 'e'}
-eur_item['bank_id'] = bank_id
-eur_item['date'] = datetime.strptime(rate_date, '%d.%m.%Y')
-eur_item['rate'] = float(g.doc.select('//valute[@id="R01239"]/value').text().replace(',', '.'))
-eur_item['scraping_date'] = datetime.now()
-ExchangeRate.create(eur_item)
+        item = {}
+        if response.doc('//valute[@id="R01235"]/value').exists():
+            item['usd_rate'] = Decimal(response.doc.select('//valute[@id="R01235"]/value').text().replace(',', '.'))
+        else:
+            print('No usd rate on the page')
 
+        if response.doc('//valute[@id="R01239"]/value').exists():
+            item['eur_rate'] = Decimal(response.doc.select('//valute[@id="R01239"]/value').text().replace(',', '.'))
+        else:
+            print('No eur rate on the page')
+
+        process_response(bank_id=bank_id, date=rate_date, exch_item=item)
