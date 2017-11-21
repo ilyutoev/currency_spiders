@@ -21,7 +21,7 @@ class Bank(DeclarativeBase):
         Session = sessionmaker(bind=engine)
         session = Session()
         if bank_id:
-            check_bank = session.query(exists().where(Bank.id==bank_id)).scalar()
+            check_bank = session.query(exists().where(Bank.id == bank_id)).scalar()
 
             if not check_bank:
                 session.add(Bank(id=bank_id, name=bank_name))
@@ -58,15 +58,19 @@ class ExchangeRate(DeclarativeBase):
         Session = sessionmaker(bind=engine)
         session = Session()
 
-        rate = session.query(exists().where(and_(ExchangeRate.date==item['date'],
-                                            ExchangeRate.bank_id==item['bank_id'],
-                                            ExchangeRate.currency==item['currency'],
-                                            ExchangeRate.type==item['type']))).scalar()
-
-        if not rate:
+        rate = session.query(ExchangeRate).filter(ExchangeRate.date == item['date'],
+                                                  ExchangeRate.bank_id == item['bank_id'],
+                                                  ExchangeRate.currency == item['currency'],
+                                                  ExchangeRate.type == item['type'],
+                                                  ExchangeRate.rate == item['rate']).first()
+        if rate:
+            rate.scraping_date = item['scraping_date']
+            session.add(rate)
+        else:
             temp = ExchangeRate(**item)
             session.add(temp)
-            session.commit()
+
+        session.commit()
         session.close()
 
 

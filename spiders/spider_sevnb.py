@@ -3,51 +3,67 @@ from datetime import date, datetime
 from decimal import Decimal
 
 from models import create_tables, Bank
-from tools import process_request, process_response
-
+from tools import get_site_page, save_data_to_db
 
 if __name__ == '__main__':
-    create_tables()
     bank_id = 2
-    Bank.create(bank_id=bank_id, bank_name="Северный Народный Банк")
-
+    bank_name = 'Северный Народный Банк'
     url = 'http://www.sevnb.ru/'
 
-    response = process_request(url)
+    create_tables()
+    Bank.create(bank_id=bank_id, bank_name=bank_name)
+
+    response = get_site_page(url)
 
     if response:
+        errors_message = ''
+
         if response.doc('//div[@class="block exchange"]').exists():
             exchange_block = response.doc.select('//div[@class="block exchange"]')
         else:
             exchange_block = None
-            print('No exchange block on the page')
+            errors_message += 'No exchange block on the page.\n'
 
         if exchange_block:
+            item = {}
+            item['bank_id'] = bank_id
+
             if exchange_block.select('.//th[@class="ex-title"]').exists():
                 rate_date = exchange_block.select('.//th[@class="ex-title"]').text().split(' ')[-1]
-                rate_date = datetime.strptime(rate_date, '%d.%m.%Y')
+                item['date'] = datetime.strptime(rate_date, '%d.%m.%Y')
             else:
-                print('No rate date on the page')
+                errors_message += 'No rate date on the page.\n'
 
-            item = {}
             if exchange_block.select('.//tr[contains(td/@class,"ex-usd")]/td[2]').exists():
-                item['usd_rate_buy'] = Decimal(exchange_block.select('.//tr[contains(td/@class,"ex-usd")]/td[2]').text())
+                item['usd_rate_buy'] = Decimal(
+                    exchange_block.select('.//tr[contains(td/@class,"ex-usd")]/td[2]').text())
             else:
-                print('No usd buy rate on the page')
+                errors_message += 'No usd buy rate on the page.\n'
 
             if exchange_block.select('.//tr[contains(td/@class,"ex-usd")]/td[3]').exists():
-                item['usd_rate_sell'] = Decimal(exchange_block.select('.//tr[contains(td/@class,"ex-usd")]/td[3]').text())
+                item['usd_rate_sell'] = Decimal(
+                    exchange_block.select('.//tr[contains(td/@class,"ex-usd")]/td[3]').text())
             else:
-                print('No usd sell rate on the page')
+                errors_message += 'No usd sell rate on the page.\n'
 
             if exchange_block.select('.//tr[contains(td/@class,"ex-eur")]/td[2]').exists():
-                item['eur_rate_buy'] = Decimal(exchange_block.select('.//tr[contains(td/@class,"ex-eur")]/td[2]').text())
+                item['eur_rate_buy'] = Decimal(
+                    exchange_block.select('.//tr[contains(td/@class,"ex-eur")]/td[2]').text())
             else:
-                print('No eur buy rate on the page')
+                errors_message += 'No eur buy rate on the page.\n'
 
             if exchange_block.select('.//tr[contains(td/@class,"ex-eur")]/td[2]').exists():
-                item['eur_rate_sell'] = Decimal(exchange_block.select('.//tr[contains(td/@class,"ex-eur")]/td[3]').text())
+                item['eur_rate_sell'] = Decimal(
+                    exchange_block.select('.//tr[contains(td/@class,"ex-eur")]/td[3]').text())
             else:
-                print('No eur sell rate on the page')
+                errors_message += 'No eur sell rate on the page.\n'
 
-            process_response(bank_id=bank_id, date=rate_date, exch_item=item)
+            if not errors_message:
+                save_data_to_db(exch_item=item)
+            else:
+                # TODO send message to the Sentry
+                errors_message = bank_name + '\n' + errors_message
+                print(errors_message)
+        else:
+            errors_message = bank_name + '\n' + errors_message
+            print(errors_message)
