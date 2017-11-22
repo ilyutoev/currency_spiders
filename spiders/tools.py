@@ -4,6 +4,7 @@ from raven import Client
 from models import ExchangeRate
 import settings
 
+
 def get_site_page(url):
     try:
         g = Grab()
