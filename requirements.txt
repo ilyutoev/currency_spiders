@@ -1,4 +1,4 @@
 SQLAlchemy==1.1.15
 psycopg2==2.7.3.1
 grab==0.6.38
-
+raven==6.3.0

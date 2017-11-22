@@ -1,18 +1,15 @@
 from datetime import datetime
 from grab import Grab
-from grab.error import GrabNetworkError, GrabTimeoutError
+from raven import Client
 from models import ExchangeRate
-
+import settings
 
 def get_site_page(url):
     try:
         g = Grab()
         g.go(url)
-    except (GrabNetworkError, GrabTimeoutError) as e:
-        print('Error', e)
-        g = None
     except Exception as e:
-        print('Unkown error', e)
+        send_message_to_sentry(str(e))
         g = None
     return g
 
@@ -35,3 +32,9 @@ def save_data_to_db(exch_item):
                 item['type'] = type
                 item['rate'] = exch_item['%s_rate_%s' % (cur, type)]
                 ExchangeRate.create(item)
+
+
+def send_message_to_sentry(msg):
+    client = Client(settings.SENTRY_PROJECT_URL)
+    client.captureMessage(msg)
+    # client.captureException()

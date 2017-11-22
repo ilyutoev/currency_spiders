@@ -3,7 +3,7 @@ from datetime import date, datetime
 from decimal import Decimal
 
 from models import create_tables, Bank
-from tools import get_site_page, save_data_to_db
+from tools import get_site_page, save_data_to_db, send_message_to_sentry
 
 if __name__ == '__main__':
     bank_id = 1
@@ -40,6 +40,5 @@ if __name__ == '__main__':
         if not errors_message:
             save_data_to_db(exch_item=item)
         else:
-            # TODO send message to the Sentry
             errors_message = bank_name + '\n' + errors_message
-            print(errors_message)
+            send_message_to_sentry(errors_message)
