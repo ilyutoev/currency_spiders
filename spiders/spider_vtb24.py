@@ -15,10 +15,10 @@ if __name__ == '__main__':
 
     url = 'https://www.vtb24.ru/ajax/content/'
     post_data = {
-        'p':'/',
-        'b':'videoSlider,financeAdvices,facilities,personalOffer,searchOffice,currency,fullWidthBanner',
-        'v':'0.6687511823600023',
-        'm':'default'
+        'p': '/',
+        'b': 'videoSlider,financeAdvices,facilities,personalOffer,searchOffice,currency,fullWidthBanner',
+        'v': '0.6687511823600023',
+        'm': 'default'
     }
     cookies = {
         'name': 'geoAttr',
@@ -30,25 +30,25 @@ if __name__ == '__main__':
     if response:
         errors_message = ''
         try:
-            jsonobject = response.doc.json
-            jsonobject = jsonobject['currency']['items']
+            json_object = response.doc.json
+            json_object = json_object['currency']['items']
         except Exception as e:
             errors_message = 'Not json on the response or inccorect json structure.\n'
-            jsonobject = None
+            json_object = None
 
-        if jsonobject:
+        if json_object:
             item = {}
             item['bank_id'] = bank_id
 
             try:
-                rate_date = jsonobject[0]['dateActiveFrom']
+                rate_date = json_object[0]['dateActiveFrom']
                 rate_date = re.findall(r'\d+', rate_date)[0]
                 item['date'] = datetime.fromtimestamp(int(rate_date) / 1000)
             except Exception as e:
                 errors_message += 'No rate date on the json or incorrect json structure.\n'
 
             try:
-                for obj in jsonobject:
+                for obj in json_object:
                     if obj['currencyGroupAbbr'] == 'pp_rubcur_office_cash' and obj['gradation'] == 1:
                         if obj['currencyAbbr'] == 'USD':
                             item['usd_rate_buy'] = Decimal(obj['buy'].replace(',', '.'))
