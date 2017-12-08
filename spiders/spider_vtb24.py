@@ -3,14 +3,13 @@ from datetime import date, datetime
 from decimal import Decimal
 import re
 
-from models import create_tables, Bank
+from models import Bank
 from tools import get_site_page, save_data_to_db, send_message_to_sentry
 
 if __name__ == '__main__':
     bank_id = 4
     bank_name = 'Втб 24'
 
-    create_tables()
     Bank.create(bank_id=bank_id, bank_name=bank_name)
 
     url = 'https://www.vtb24.ru/ajax/content/'

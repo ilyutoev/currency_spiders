@@ -81,3 +81,7 @@ def db_connect():
 def create_tables():
     engine = db_connect()
     DeclarativeBase.metadata.create_all(engine)
+
+
+if __name__ == '__main__':
+    create_tables()

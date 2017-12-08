@@ -2,7 +2,7 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from models import create_tables, Bank
+from models import Bank
 from tools import get_site_page, save_data_to_db, send_message_to_sentry
 
 if __name__ == '__main__':
@@ -10,7 +10,6 @@ if __name__ == '__main__':
     bank_name = 'Сбербанк'
     url = 'http://www.sberbank.ru/portalserver/proxy/?pipe=shortCachePipe&url=http://localhost/rates-web/rateService/rate/current%3FregionId%3D11%26currencyCode%3D840%26currencyCode%3D978%26rateCategory%3Dbase%26rateCategory%3Dbeznal%26rateCategory%3Dcards'
 
-    create_tables()
     Bank.create(bank_id=bank_id, bank_name=bank_name)
 
     response = get_site_page(url)

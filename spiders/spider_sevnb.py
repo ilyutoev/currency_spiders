@@ -2,7 +2,7 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from models import create_tables, Bank
+from models import Bank
 from tools import get_site_page, save_data_to_db, send_message_to_sentry
 
 if __name__ == '__main__':
@@ -10,7 +10,6 @@ if __name__ == '__main__':
     bank_name = 'Северный Народный Банк'
     url = 'http://www.sevnb.ru/'
 
-    create_tables()
     Bank.create(bank_id=bank_id, bank_name=bank_name)
 
     response = get_site_page(url)
