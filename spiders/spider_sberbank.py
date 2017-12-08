@@ -3,7 +3,8 @@ from datetime import date, datetime
 from decimal import Decimal
 
 from models import Bank
-from tools import get_site_page, save_data_to_db, send_message_to_sentry
+from tools import save_data_to_db, send_message_to_sentry
+from response_handlers import get_site_page
 
 if __name__ == '__main__':
     bank_id = 3
@@ -20,7 +21,7 @@ if __name__ == '__main__':
             json_object = response.doc.json
             json_object = json_object['base']
         except Exception as e:
-            errors_message = 'Not json on the response or inccorect json structure.\n'
+            errors_message = 'Not json on the response or incorrect json structure.\n'
             json_object = None
 
         if json_object:

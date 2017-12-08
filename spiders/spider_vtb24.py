@@ -4,7 +4,8 @@ from decimal import Decimal
 import re
 
 from models import Bank
-from tools import get_site_page, save_data_to_db, send_message_to_sentry
+from tools import save_data_to_db, send_message_to_sentry
+from response_handlers import get_site_page
 
 if __name__ == '__main__':
     bank_id = 4

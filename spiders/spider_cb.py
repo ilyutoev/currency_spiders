@@ -3,13 +3,14 @@ from datetime import date, datetime
 from decimal import Decimal
 
 from models import Bank
-from tools import get_site_page, save_data_to_db, send_message_to_sentry
+from tools import save_data_to_db, send_message_to_sentry
+from response_handlers import get_site_page
 
 if __name__ == '__main__':
     bank_id = 1
     bank_name = 'Центробанк'
     today = date.today()
-    url = 'http://www.cbr.ru/scripts/XML_daily.asp?date_req={}/{}/{}'.format(today.day, today.month, today.year)
+    url = 'http://www.cbr.ru/scripts/XML_daily.asp?date_req={}'.format(today.strftime('%d/%m/%Y'))
 
     Bank.create(bank_id=bank_id, bank_name=bank_name)
 
