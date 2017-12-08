@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from datetime import date, datetime
-from decimal import Decimal
 
 from models import Bank
-from tools import get_site_page, save_data_to_db, send_message_to_sentry
+from tools import save_data_to_db, send_message_to_sentry
+from response_handlers import get_site_page, get_exchange_block_from_html, get_currency_rate_from_html
 
 if __name__ == '__main__':
     bank_id = 2
@@ -17,11 +17,11 @@ if __name__ == '__main__':
     if response:
         errors_message = ''
 
-        if response.doc('//div[@class="block exchange"]').exists():
-            exchange_block = response.doc.select('//div[@class="block exchange"]')
-        else:
-            exchange_block = None
-            errors_message += 'No exchange block on the page.\n'
+        exchange_block, errors_message = get_exchange_block_from_html(
+            html_response=response,
+            xpath='//div[@class="block exchange"]',
+            errors_string=errors_message
+        )
 
         if exchange_block:
             item = {}
@@ -33,29 +33,33 @@ if __name__ == '__main__':
             else:
                 errors_message += 'No rate date on the page.\n'
 
-            if exchange_block.select('.//tr[contains(td/@class,"ex-usd")]/td[2]').exists():
-                item['usd_rate_buy'] = Decimal(
-                    exchange_block.select('.//tr[contains(td/@class,"ex-usd")]/td[2]').text())
-            else:
-                errors_message += 'No usd buy rate on the page.\n'
+            item['usd_rate_buy'], errors_message = get_currency_rate_from_html(
+                html_response=exchange_block,
+                xpath='.//tr[contains(td/@class,"ex-usd")]/td[2]',
+                errors_string=errors_message,
+                currency='usd buy'
+            )
 
-            if exchange_block.select('.//tr[contains(td/@class,"ex-usd")]/td[3]').exists():
-                item['usd_rate_sell'] = Decimal(
-                    exchange_block.select('.//tr[contains(td/@class,"ex-usd")]/td[3]').text())
-            else:
-                errors_message += 'No usd sell rate on the page.\n'
+            item['usd_rate_sell'], errors_message = get_currency_rate_from_html(
+                html_response=exchange_block,
+                xpath='.//tr[contains(td/@class,"ex-usd")]/td[3]',
+                errors_string=errors_message,
+                currency='usd sell'
+            )
 
-            if exchange_block.select('.//tr[contains(td/@class,"ex-eur")]/td[2]').exists():
-                item['eur_rate_buy'] = Decimal(
-                    exchange_block.select('.//tr[contains(td/@class,"ex-eur")]/td[2]').text())
-            else:
-                errors_message += 'No eur buy rate on the page.\n'
+            item['eur_rate_buy'], errors_message = get_currency_rate_from_html(
+                html_response=exchange_block,
+                xpath='.//tr[contains(td/@class,"ex-eur")]/td[2]',
+                errors_string=errors_message,
+                currency='eur buy'
+            )
 
-            if exchange_block.select('.//tr[contains(td/@class,"ex-eur")]/td[2]').exists():
-                item['eur_rate_sell'] = Decimal(
-                    exchange_block.select('.//tr[contains(td/@class,"ex-eur")]/td[3]').text())
-            else:
-                errors_message += 'No eur sell rate on the page.\n'
+            item['eur_rate_sell'], errors_message = get_currency_rate_from_html(
+                html_response=exchange_block,
+                xpath='.//tr[contains(td/@class,"ex-eur")]/td[3]',
+                errors_string=errors_message,
+                currency='eur sell'
+            )
 
             if not errors_message:
                 save_data_to_db(exch_item=item)
