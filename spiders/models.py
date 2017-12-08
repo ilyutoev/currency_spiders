@@ -17,8 +17,6 @@ class Bank(DeclarativeBase):
 
     @staticmethod
     def create(bank_id=None, bank_name=None):
-        engine = db_connect()
-        Session = sessionmaker(bind=engine)
         session = Session()
         if bank_id:
             check_bank = session.query(exists().where(Bank.id == bank_id)).scalar()
@@ -54,8 +52,6 @@ class ExchangeRate(DeclarativeBase):
 
     @staticmethod
     def create(item):
-        engine = db_connect()
-        Session = sessionmaker(bind=engine)
         session = Session()
 
         rate = session.query(ExchangeRate).filter(ExchangeRate.date == item['date'],
@@ -82,6 +78,9 @@ def create_tables():
     engine = db_connect()
     DeclarativeBase.metadata.create_all(engine)
 
+
+engine = db_connect()
+Session = sessionmaker(bind=engine)
 
 if __name__ == '__main__':
     create_tables()
