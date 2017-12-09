@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import date, datetime
-from decimal import Decimal
+from datetime import datetime
 
 from .models import Bank
 from .tools import save_data_to_db, send_message_to_sentry
@@ -25,7 +24,6 @@ def run_spider():
         except Exception as e:
             errors_message = 'Not json on the response or incorrect json structure.\n'
             json_object = None
-
 
         if json_object:
             item = {'bank_id': bank_id}
