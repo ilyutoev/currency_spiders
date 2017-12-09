@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from datetime import date, datetime
 
-from models import Bank
-from tools import save_data_to_db, send_message_to_sentry
-from response_handlers import get_site_page, get_exchange_block_from_html, get_currency_rate_from_html
+from .models import Bank
+from .tools import save_data_to_db, send_message_to_sentry
+from .response_handlers import get_site_page, get_exchange_block_from_html, get_currency_rate_from_exchange_block
 
-if __name__ == '__main__':
+
+def run_spider():
     bank_id = 2
     bank_name = 'Северный Народный Банк'
     url = 'http://www.sevnb.ru/'
@@ -32,28 +33,28 @@ if __name__ == '__main__':
             else:
                 errors_message += 'No rate date on the page.\n'
 
-            item['usd_rate_buy'], errors_message = get_currency_rate_from_html(
+            item['usd_rate_buy'], errors_message = get_currency_rate_from_exchange_block(
                 html_response=exchange_block,
                 xpath='.//tr[contains(td/@class,"ex-usd")]/td[2]',
                 errors_string=errors_message,
                 currency='usd buy'
             )
 
-            item['usd_rate_sell'], errors_message = get_currency_rate_from_html(
+            item['usd_rate_sell'], errors_message = get_currency_rate_from_exchange_block(
                 html_response=exchange_block,
                 xpath='.//tr[contains(td/@class,"ex-usd")]/td[3]',
                 errors_string=errors_message,
                 currency='usd sell'
             )
 
-            item['eur_rate_buy'], errors_message = get_currency_rate_from_html(
+            item['eur_rate_buy'], errors_message = get_currency_rate_from_exchange_block(
                 html_response=exchange_block,
                 xpath='.//tr[contains(td/@class,"ex-eur")]/td[2]',
                 errors_string=errors_message,
                 currency='eur buy'
             )
 
-            item['eur_rate_sell'], errors_message = get_currency_rate_from_html(
+            item['eur_rate_sell'], errors_message = get_currency_rate_from_exchange_block(
                 html_response=exchange_block,
                 xpath='.//tr[contains(td/@class,"ex-eur")]/td[3]',
                 errors_string=errors_message,
