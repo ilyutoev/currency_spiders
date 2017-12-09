@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from datetime import date, datetime
-from decimal import Decimal
 
-from models import Bank
-from tools import save_data_to_db, send_message_to_sentry
-from response_handlers import get_site_page, get_currency_rate_from_html
+from .models import Bank
+from .tools import save_data_to_db, send_message_to_sentry
+from .response_handlers import get_site_page, get_currency_rate_from_html
 
-if __name__ == '__main__':
+
+def run_spider():
     bank_id = 1
     bank_name = 'Центробанк'
     today = date.today()

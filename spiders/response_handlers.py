@@ -1,6 +1,6 @@
 from decimal import Decimal
 from grab import Grab
-from tools import send_message_to_sentry
+from .tools import send_message_to_sentry
 
 
 def get_site_page(url, post=None, cookies=None):
@@ -19,7 +19,7 @@ def get_site_page(url, post=None, cookies=None):
 
 
 def get_exchange_block_from_html(html_response, xpath, errors_string):
-    if html_response.doc(xpath).exists():
+    if html_response.doc.select(xpath).exists():
         html_exchange_block = html_response.doc.select(xpath)
     else:
         html_exchange_block = None
@@ -28,6 +28,16 @@ def get_exchange_block_from_html(html_response, xpath, errors_string):
 
 
 def get_currency_rate_from_html(html_response, xpath, errors_string, currency):
+    if html_response.doc.select(xpath).exists():
+        currency_rate = Decimal(html_response.doc.select(xpath).text().replace(',', '.'))
+    else:
+        currency_rate = None
+        errors_string += 'No {} rate on the page.\n'.format(currency)
+
+    return currency_rate, errors_string
+
+
+def get_currency_rate_from_exchange_block(html_response, xpath, errors_string, currency):
     if html_response.select(xpath).exists():
         currency_rate = Decimal(html_response.select(xpath).text().replace(',', '.'))
     else:

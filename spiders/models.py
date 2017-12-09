@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.engine.url import URL
-import settings
+from .settings import DATABASE
 
 DeclarativeBase = declarative_base()
 
@@ -71,7 +71,7 @@ class ExchangeRate(DeclarativeBase):
 
 
 def db_connect():
-    return create_engine(URL(**settings.DATABASE), client_encoding='utf8', encoding='utf8', echo=False)
+    return create_engine(URL(**DATABASE), client_encoding='utf8', encoding='utf8', echo=False)
 
 
 def create_tables():

@@ -1,7 +1,7 @@
 from datetime import datetime
 from raven import Client
-from models import ExchangeRate
-import settings
+from .models import ExchangeRate
+from .settings import SENTRY_PROJECT_URL
 
 
 def save_data_to_db(exch_item):
@@ -25,6 +25,6 @@ def save_data_to_db(exch_item):
 
 
 def send_message_to_sentry(msg):
-    client = Client(settings.SENTRY_PROJECT_URL)
+    client = Client(SENTRY_PROJECT_URL)
     client.captureMessage(msg)
 
