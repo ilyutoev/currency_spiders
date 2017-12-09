@@ -8,8 +8,7 @@ Installation
 ------------
 
 1. Rename settings_example.py to settings.py and enter your database and sentry settings.
-2. Install needed python modules
-    pip install -r requirements.txt
+2. Install needed python modules `pip install -r requirements.txt`.
 3. Run models.py to create needed tables.
 
 
