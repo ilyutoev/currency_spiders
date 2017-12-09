@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from models import Bank
 from tools import save_data_to_db, send_message_to_sentry
-from response_handlers import get_site_page
+from response_handlers import get_site_page, get_currency_rate_from_html
 
 if __name__ == '__main__':
     bank_id = 1
@@ -18,8 +18,8 @@ if __name__ == '__main__':
 
     if response:
         errors_message = ''
-        item = {}
-        item['bank_id'] = bank_id
+
+        item = {'bank_id': bank_id}
 
         if response.doc('//valcurs').exists():
             rate_date = response.doc.select('//valcurs').attr('date')
@@ -27,15 +27,19 @@ if __name__ == '__main__':
         else:
             errors_message += 'No rate date on the page.\n'
 
-        if response.doc('//valute[@id="R01235"]/value').exists():
-            item['usd_rate'] = Decimal(response.doc.select('//valute[@id="R01235"]/value').text().replace(',', '.'))
-        else:
-            errors_message += 'No usd rate on the page.\n'
+        item['usd_rate'], errors_message = get_currency_rate_from_html(
+            html_response=response,
+            xpath='//valute[@id="R01235"]/value',
+            errors_string=errors_message,
+            currency='usd'
+        )
 
-        if response.doc('//valute[@id="R01239"]/value').exists():
-            item['eur_rate'] = Decimal(response.doc.select('//valute[@id="R01239"]/value').text().replace(',', '.'))
-        else:
-            errors_message += 'No eur rate on the page.\n'
+        item['eur_rate'], errors_message = get_currency_rate_from_html(
+            html_response=response,
+            xpath='//valute[@id="R01239"]/value',
+            errors_string=errors_message,
+            currency='eur'
+        )
 
         if not errors_message:
             save_data_to_db(exch_item=item)

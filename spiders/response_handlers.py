@@ -29,7 +29,7 @@ def get_exchange_block_from_html(html_response, xpath, errors_string):
 
 def get_currency_rate_from_html(html_response, xpath, errors_string, currency):
     if html_response.select(xpath).exists():
-        currency_rate = Decimal(html_response.select(xpath).text())
+        currency_rate = Decimal(html_response.select(xpath).text().replace(',', '.'))
     else:
         currency_rate = None
         errors_string += 'No {} rate on the page.\n'.format(currency)

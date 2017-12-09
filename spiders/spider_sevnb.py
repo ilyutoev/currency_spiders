@@ -24,8 +24,7 @@ if __name__ == '__main__':
         )
 
         if exchange_block:
-            item = {}
-            item['bank_id'] = bank_id
+            item = {'bank_id': bank_id}
 
             if exchange_block.select('.//th[@class="ex-title"]').exists():
                 rate_date = exchange_block.select('.//th[@class="ex-title"]').text().split(' ')[-1]
