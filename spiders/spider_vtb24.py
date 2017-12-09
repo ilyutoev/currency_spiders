@@ -3,11 +3,12 @@ from datetime import date, datetime
 from decimal import Decimal
 import re
 
-from models import Bank
-from tools import save_data_to_db, send_message_to_sentry
-from response_handlers import get_site_page
+from .models import Bank
+from .tools import save_data_to_db, send_message_to_sentry
+from .response_handlers import get_site_page
 
-if __name__ == '__main__':
+
+def run_spider():
     bank_id = 4
     bank_name = 'Втб 24'
 
@@ -29,6 +30,7 @@ if __name__ == '__main__':
 
     if response:
         errors_message = ''
+
         try:
             json_object = response.doc.json
             json_object = json_object['currency']['items']
@@ -37,8 +39,7 @@ if __name__ == '__main__':
             json_object = None
 
         if json_object:
-            item = {}
-            item['bank_id'] = bank_id
+            item = {'bank_id': bank_id}
 
             try:
                 rate_date = json_object[0]['dateActiveFrom']

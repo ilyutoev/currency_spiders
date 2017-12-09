@@ -2,11 +2,12 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from models import Bank
-from tools import save_data_to_db, send_message_to_sentry
-from response_handlers import get_site_page
+from .models import Bank
+from .tools import save_data_to_db, send_message_to_sentry
+from .response_handlers import get_site_page
 
-if __name__ == '__main__':
+
+def run_spider():
     bank_id = 3
     bank_name = 'Сбербанк'
     url = 'http://www.sberbank.ru/portalserver/proxy/?pipe=shortCachePipe&url=http://localhost/rates-web/rateService/rate/current%3FregionId%3D11%26currencyCode%3D840%26currencyCode%3D978%26rateCategory%3Dbase%26rateCategory%3Dbeznal%26rateCategory%3Dcards'
@@ -17,6 +18,7 @@ if __name__ == '__main__':
 
     if response:
         errors_message = ''
+
         try:
             json_object = response.doc.json
             json_object = json_object['base']
@@ -24,9 +26,9 @@ if __name__ == '__main__':
             errors_message = 'Not json on the response or incorrect json structure.\n'
             json_object = None
 
+
         if json_object:
-            item = {}
-            item['bank_id'] = bank_id
+            item = {'bank_id': bank_id}
 
             try:
                 rate_date = json_object['978']['0']['activeFrom']
