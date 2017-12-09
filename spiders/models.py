@@ -54,11 +54,13 @@ class ExchangeRate(DeclarativeBase):
     def create(item):
         session = Session()
 
-        rate = session.query(ExchangeRate).filter(ExchangeRate.date == item['date'],
-                                                  ExchangeRate.bank_id == item['bank_id'],
-                                                  ExchangeRate.currency == item['currency'],
-                                                  ExchangeRate.type == item['type'],
-                                                  ExchangeRate.rate == item['rate']).first()
+        rate = session.query(ExchangeRate).filter(
+            ExchangeRate.date == item['date'],
+            ExchangeRate.bank_id == item['bank_id'],
+            ExchangeRate.currency == item['currency'],
+            ExchangeRate.type == item['type'],
+            ExchangeRate.rate == item['rate']
+        ).first()
         if rate:
             rate.scraping_date = item['scraping_date']
             session.add(rate)
