@@ -81,3 +81,62 @@ def cb_response_scraping(response, bank_id, bank_name):
         errors_message = bank_name + '\n' + errors_message
 
     return item, errors_message
+
+
+def sevnb_response_scraping(response, bank_id, bank_name):
+    errors_message = ''
+
+    if response:
+        exchange_block, errors_message = get_exchange_block_from_html(
+            html_response=response,
+            xpath='//div[@class="block exchange"]',
+            errors_string=errors_message
+        )
+
+        if exchange_block:
+            item = {'bank_id': bank_id}
+
+            if exchange_block.select('.//th[@class="ex-title"]').exists():
+                rate_date = exchange_block.select('.//th[@class="ex-title"]').text().split(' ')[-1]
+                item['date'] = datetime.strptime(rate_date, '%d.%m.%Y')
+            else:
+                errors_message += 'No rate date on the page.\n'
+
+            item['usd_rate_buy'], errors_message = get_currency_rate_from_exchange_block(
+                html_response=exchange_block,
+                xpath='.//tr[contains(td/@class,"ex-usd")]/td[2]',
+                errors_string=errors_message,
+                currency='usd buy'
+            )
+
+            item['usd_rate_sell'], errors_message = get_currency_rate_from_exchange_block(
+                html_response=exchange_block,
+                xpath='.//tr[contains(td/@class,"ex-usd")]/td[3]',
+                errors_string=errors_message,
+                currency='usd sell'
+            )
+
+            item['eur_rate_buy'], errors_message = get_currency_rate_from_exchange_block(
+                html_response=exchange_block,
+                xpath='.//tr[contains(td/@class,"ex-eur")]/td[2]',
+                errors_string=errors_message,
+                currency='eur buy'
+            )
+
+            item['eur_rate_sell'], errors_message = get_currency_rate_from_exchange_block(
+                html_response=exchange_block,
+                xpath='.//tr[contains(td/@class,"ex-eur")]/td[3]',
+                errors_string=errors_message,
+                currency='eur sell'
+            )
+        else:
+            item = None
+            errors_message += 'No exchange block.\n'
+    else:
+        item = None
+        errors_message = 'No response.\n'
+
+    if errors_message:
+        errors_message = bank_name + '\n' + errors_message
+
+    return item, errors_message
