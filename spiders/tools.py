@@ -5,6 +5,18 @@ from .settings import SENTRY_PROJECT_URL
 
 
 def save_data_to_db(exch_item):
+    """
+    Get exchange item and create two db lines for Centrobank:
+        usd
+        eur
+
+    and four db lines for other banks:
+        usd sell
+        usd buy
+        eur sell
+        eur buy.
+    """
+
     item = {}
     item['bank_id'] = exch_item['bank_id']
     item['date'] = exch_item['date']
