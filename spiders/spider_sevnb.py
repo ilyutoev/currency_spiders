@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
-
 from .models import Bank
 from .tools import save_data_to_db, send_message_to_sentry
 from .response_handlers import get_site_page, sevnb_response_scraping

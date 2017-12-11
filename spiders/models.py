@@ -24,7 +24,6 @@ class Bank(DeclarativeBase):
             if not check_bank:
                 session.add(Bank(id=bank_id, name=bank_name))
                 session.commit()
-                print('bank item created')
         session.close()
 
 
