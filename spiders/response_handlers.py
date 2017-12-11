@@ -1,4 +1,5 @@
 from decimal import Decimal
+from datetime import datetime
 from grab import Grab
 from .tools import send_message_to_sentry
 
@@ -45,3 +46,38 @@ def get_currency_rate_from_exchange_block(html_response, xpath, errors_string, c
         errors_string += 'No {} rate on the page.\n'.format(currency)
 
     return currency_rate, errors_string
+
+
+def cb_response_scraping(response, bank_id, bank_name):
+    errors_message = ''
+
+    if response:
+        item = {'bank_id': bank_id}
+
+        if response.doc('//valcurs').exists():
+            rate_date = response.doc.select('//valcurs').attr('date')
+            item['date'] = datetime.strptime(rate_date, '%d.%m.%Y')
+        else:
+            errors_message += 'No rate date on the page.\n'
+
+        item['usd_rate'], errors_message = get_currency_rate_from_html(
+            html_response=response,
+            xpath='//valute[@id="R01235"]/value',
+            errors_string=errors_message,
+            currency='usd'
+        )
+
+        item['eur_rate'], errors_message = get_currency_rate_from_html(
+            html_response=response,
+            xpath='//valute[@id="R01239"]/value',
+            errors_string=errors_message,
+            currency='eur'
+        )
+    else:
+        item = None
+        errors_message = 'No response.'
+
+    if errors_message:
+        errors_message = bank_name + '\n' + errors_message
+
+    return item, errors_message
