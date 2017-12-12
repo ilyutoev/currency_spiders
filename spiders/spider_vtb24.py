@@ -44,7 +44,9 @@ def run_spider():
             try:
                 rate_date = json_object[0]['dateActiveFrom']
                 rate_date = re.findall(r'\d+', rate_date)[0]
-                item['date'] = datetime.fromtimestamp(int(rate_date) / 1000)
+                item['date'] = datetime.fromtimestamp(
+                    int(rate_date) / 1000
+                ).replace(hour=0, minute=0, second=0, microsecond=0)
             except Exception as e:
                 errors_message += 'No rate date on the json or incorrect json structure.\n'
 
