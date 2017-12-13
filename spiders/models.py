@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import create_engine, Column, Integer, String, Date, DateTime, ForeignKey, Numeric
 from sqlalchemy.sql import exists, and_
 from sqlalchemy.ext.declarative import declarative_base
@@ -82,6 +84,39 @@ def create_tables():
 
 engine = db_connect()
 Session = sessionmaker(bind=engine)
+
+
+def save_data_to_db(exch_item):
+    """
+    Get exchange item and create two db lines for Centrobank:
+        usd
+        eur
+
+    and four db lines for other banks:
+        usd sell
+        usd buy
+        eur sell
+        eur buy.
+    """
+
+    item = {}
+    item['bank_id'] = exch_item['bank_id']
+    item['date'] = exch_item['date']
+    item['scraping_date'] = datetime.now()
+
+    for cur in ['usd', 'eur']:
+        item['currency'] = cur
+
+        if item['bank_id'] == 1:
+            item['rate'] = exch_item['%s_rate' % cur]
+            item['type'] = None
+            ExchangeRate.create(item)
+        else:
+            for currency_type in ['buy', 'sell']:
+                item['type'] = currency_type
+                item['rate'] = exch_item['%s_rate_%s' % (cur, currency_type)]
+                ExchangeRate.create(item)
+
 
 if __name__ == '__main__':
     create_tables()
