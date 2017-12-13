@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
+from decimal import Decimal
 
 from .models import Bank
 from .tools import save_data_to_db, send_message_to_sentry
@@ -37,22 +38,22 @@ def run_spider():
                 errors_message += 'No rate date on the json or incorrect json structure.\n'
 
             try:
-                item['usd_rate_buy'] = json_object['840']['0']['buyValue']
+                item['usd_rate_buy'] = Decimal(str(json_object['840']['0']['buyValue']))
             except Exception as e:
                 errors_message += 'No usd buy rate on the json or incorrect json structure.\n'
 
             try:
-                item['usd_rate_sell'] = json_object['840']['0']['sellValue']
+                item['usd_rate_sell'] = Decimal(str(json_object['840']['0']['sellValue']))
             except Exception as e:
                 errors_message += 'No usd sell rate on the json or incorrect json structure.\n'
 
             try:
-                item['eur_rate_buy'] = json_object['978']['0']['buyValue']
+                item['eur_rate_buy'] = Decimal(str(json_object['978']['0']['buyValue']))
             except Exception as e:
                 errors_message += 'No eur buy rate on the json or incorrect json structure.\n'
 
             try:
-                item['eur_rate_sell'] = json_object['978']['0']['sellValue']
+                item['eur_rate_sell'] = Decimal(str(json_object['978']['0']['sellValue']))
             except Exception as e:
                 errors_message += 'No eur sell rate on the json or incorrect json structure.\n'
 
