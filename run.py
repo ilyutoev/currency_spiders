@@ -1,7 +1,7 @@
 from datetime import date
 from spiders.common_spider import run_spider
-from spiders.response_handlers import cb_response_scraping
-from spiders import spider_cb, spider_sevnb, spider_sberbank, spider_vtb24
+from spiders.response_handlers import cb_response_scraping, sevnb_response_scraping
+from spiders import spider_sberbank, spider_vtb24
 
 
 if __name__ == '__main__':
@@ -15,6 +15,14 @@ if __name__ == '__main__':
         request_cookies=None
     )
 
-    # spider_sevnb.run_spider()
+    run_spider(
+        bank_id=2,
+        bank_name='Северный Народный Банк',
+        scraping_function=sevnb_response_scraping,
+        request_url='http://www.sevnb.ru/',
+        request_post=None,
+        request_cookies=None
+    )
+
     # spider_sberbank.run_spider()
     # spider_vtb24.run_spider()
