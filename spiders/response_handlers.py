@@ -140,3 +140,54 @@ def sevnb_response_scraping(response, bank_id, bank_name):
         errors_message = bank_name + '\n' + errors_message
 
     return item, errors_message
+
+
+def sberbank_response_scraping(response, bank_id, bank_name):
+    errors_message = ''
+
+    try:
+        json_object = response.doc.json
+        json_object = json_object['base']
+    except Exception as e:
+        errors_message = 'Not json on the response or incorrect json structure.\n'
+        json_object = None
+
+    if json_object:
+        item = {'bank_id': bank_id}
+
+        try:
+            rate_date = json_object['978']['0']['activeFrom']
+            item['date'] = datetime.fromtimestamp(
+                rate_date / 1000
+            ).replace(hour=0, minute=0, second=0, microsecond=0)
+        except Exception as e:
+            errors_message += 'No rate date on the json or incorrect json structure.\n'
+
+        try:
+            item['usd_rate_buy'] = Decimal(str(json_object['840']['0']['buyValue']))
+        except Exception as e:
+            errors_message += 'No usd buy rate on the json or incorrect json structure.\n'
+
+        try:
+            item['usd_rate_sell'] = Decimal(str(json_object['840']['0']['sellValue']))
+        except Exception as e:
+            errors_message += 'No usd sell rate on the json or incorrect json structure.\n'
+
+        try:
+            item['eur_rate_buy'] = Decimal(str(json_object['978']['0']['buyValue']))
+        except Exception as e:
+            errors_message += 'No eur buy rate on the json or incorrect json structure.\n'
+
+        try:
+            item['eur_rate_sell'] = Decimal(str(json_object['978']['0']['sellValue']))
+        except Exception as e:
+            errors_message += 'No eur sell rate on the json or incorrect json structure.\n'
+
+    else:
+        item = None
+        errors_message = 'No json response.\n'
+
+    if errors_message:
+        errors_message = bank_name + '\n' + errors_message
+
+    return item, errors_message
