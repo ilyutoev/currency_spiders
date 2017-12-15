@@ -1,5 +1,7 @@
 from decimal import Decimal
 from datetime import datetime
+import re
+
 from grab import Grab
 from .tools import send_message_to_sentry
 
@@ -186,6 +188,67 @@ def sberbank_response_scraping(response, bank_id, bank_name):
     else:
         item = None
         errors_message = 'No json response.\n'
+
+    if errors_message:
+        errors_message = bank_name + '\n' + errors_message
+
+    return item, errors_message
+
+
+def vtb24_response_scraping(response, bank_id, bank_name):
+    errors_message = ''
+
+    if response:
+        try:
+            json_object = response.doc.json
+            json_object = json_object['currency']['items']
+        except Exception as e:
+            errors_message = 'Not json on the response or inccorect json structure.\n'
+            json_object = None
+
+        if json_object:
+            item = {'bank_id': bank_id}
+
+            try:
+                rate_date = json_object[0]['dateActiveFrom']
+                rate_date = re.findall(r'\d+', rate_date)[0]
+                item['date'] = datetime.fromtimestamp(
+                    int(rate_date) / 1000
+                ).replace(hour=0, minute=0, second=0, microsecond=0)
+            except Exception as e:
+                errors_message += 'No rate date on the json or incorrect json structure.\n'
+
+            try:
+                for obj in json_object:
+                    if obj['currencyGroupAbbr'] == 'pp_rubcur_office_cash' and obj['gradation'] == 1:
+                        if obj['currencyAbbr'] == 'USD':
+                            item['usd_rate_buy'] = Decimal(obj['buy'].replace(',', '.'))
+                            item['usd_rate_sell'] = Decimal(obj['sell'].replace(',', '.'))
+                        if obj['currencyAbbr'] == 'EUR':
+                            item['eur_rate_buy'] = Decimal(obj['buy'].replace(',', '.'))
+                            item['eur_rate_sell'] = Decimal(obj['sell'].replace(',', '.'))
+            except Exception as e:
+                errors_message += 'Error with json structure.\n'
+                errors_message += str(e)
+
+            if 'usd_rate_buy' not in item:
+                errors_message += 'No usd buy rate on the json.\n'
+
+            if 'usd_rate_sell' not in item:
+                errors_message += 'No usd sell rate on the json.\n'
+
+            if 'eur_rate_buy' not in item:
+                errors_message += 'No eur buy rate on the json.\n'
+
+            if 'eur_rate_sell' not in item:
+                errors_message += 'No eur sell rate on the json.\n'
+
+        else:
+            item = None
+            errors_message += 'No  json response.\n'
+    else:
+        item = None
+        errors_message = 'No response.\n'
 
     if errors_message:
         errors_message = bank_name + '\n' + errors_message

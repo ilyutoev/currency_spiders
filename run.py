@@ -1,6 +1,7 @@
 from datetime import date
 from spiders.common_spider import run_spider
-from spiders.response_handlers import cb_response_scraping, sevnb_response_scraping, sberbank_response_scraping
+from spiders.response_handlers import cb_response_scraping, sevnb_response_scraping,\
+    sberbank_response_scraping, vtb24_response_scraping
 
 
 if __name__ == '__main__':
@@ -34,5 +35,20 @@ if __name__ == '__main__':
         request_cookies=None
     )
 
-
-    # spider_vtb24.run_spider()
+    run_spider(
+        bank_id=4,
+        bank_name='Втб 24',
+        scraping_function=vtb24_response_scraping,
+        request_url='https://www.vtb24.ru/ajax/content/',
+        request_post={
+            'p': '/',
+            'b': 'videoSlider,financeAdvices,facilities,personalOffer,searchOffice,currency,fullWidthBanner',
+            'v': '0.6687511823600023',
+            'm': 'default'
+        },
+        request_cookies={
+            'name': 'geoAttr',
+            'value': 'syktyvkar',
+            'domain': 'www.vtb24.ru'
+        }
+    )
