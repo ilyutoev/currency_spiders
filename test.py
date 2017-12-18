@@ -11,10 +11,13 @@ class ResponseScrapingTestCase(unittest.TestCase):
     def setUp(self):
         self.path = 'test_cases'
 
+    def data_prepare(self, bank_id, scraping_function, response_file, bank_name=None):
+        with open(os.path.join(self.path, response_file), 'rb') as html_response:
+            grab_object = Grab(html_response.read())
+            item, errors = scraping_function(grab_object, bank_id, bank_name)
+            return item
+
     def test_cb_response_scraping(self):
-        bank_id = 1
-        bank_name = 'Центробанк'
-        response_path = 'centrobank.html'
         test_item = {
             'bank_id': 1,
             'eur_rate': Decimal('69.4298'),
@@ -22,16 +25,15 @@ class ResponseScrapingTestCase(unittest.TestCase):
             'date': datetime.datetime(2017, 12, 16, 0, 0)
         }
 
-        with open(os.path.join(self.path, response_path), 'rb') as html_response:
-            grab_object = Grab(html_response.read())
-            item, errors = cb_response_scraping(grab_object, bank_id, bank_name)
+        item = self.data_prepare(
+            bank_id=1,
+            scraping_function=cb_response_scraping,
+            response_file='centrobank.html'
+        )
 
         self.assertEqual(test_item, item)
 
     def test_sevnb_response_scraping(self):
-        bank_id = 2
-        bank_name = 'Северный Народный Банк'
-        response_path = 'sevnb.html'
         test_item = {
             'bank_id': 2,
             'eur_rate_buy': Decimal('68.85'),
@@ -41,16 +43,15 @@ class ResponseScrapingTestCase(unittest.TestCase):
             'date': datetime.datetime(2017, 12, 18, 0, 0)
         }
 
-        with open(os.path.join(self.path, response_path), 'rb') as html_response:
-            grab_object = Grab(html_response.read())
-            item, errors = sevnb_response_scraping(grab_object, bank_id, bank_name)
+        item = self.data_prepare(
+            bank_id=2,
+            scraping_function=sevnb_response_scraping,
+            response_file='sevnb.html'
+        )
 
         self.assertEqual(test_item, item)
 
     def test_sberbank_response_scraping(self):
-        bank_id = 3
-        bank_name = 'Сбербанк'
-        response_path = 'sberbank.html'
         test_item = {
             'bank_id': 3,
             'eur_rate_buy': Decimal('67.81'),
@@ -60,16 +61,15 @@ class ResponseScrapingTestCase(unittest.TestCase):
             'date': datetime.datetime(2017, 12, 15, 0, 0)
         }
 
-        with open(os.path.join(self.path, response_path), 'rb') as html_response:
-            grab_object = Grab(html_response.read())
-            item, errors = sberbank_response_scraping(grab_object, bank_id, bank_name)
+        item = self.data_prepare(
+            bank_id=3,
+            scraping_function=sberbank_response_scraping,
+            response_file='sberbank.html'
+        )
 
         self.assertEqual(test_item, item)
 
     def test_vtb24_response_scraping(self):
-        bank_id = 4
-        bank_name = 'Втб 24'
-        response_path = 'vtb24.html'
         test_item = {
             'bank_id': 4,
             'eur_rate_buy': Decimal('68.4500'),
@@ -79,9 +79,11 @@ class ResponseScrapingTestCase(unittest.TestCase):
             'date': datetime.datetime(2017, 12, 18, 0, 0)
         }
 
-        with open(os.path.join(self.path, response_path), 'rb') as html_response:
-            grab_object = Grab(html_response.read())
-            item, errors = vtb24_response_scraping(grab_object, bank_id, bank_name)
+        item = self.data_prepare(
+            bank_id=4,
+            scraping_function=vtb24_response_scraping,
+            response_file='vtb24.html'
+        )
 
         self.assertEqual(test_item, item)
 
