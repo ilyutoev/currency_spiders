@@ -3,7 +3,7 @@ from datetime import datetime
 import re
 
 from grab import Grab
-from .tools import send_message_to_sentry
+from .logging_handlers import send_message_to_sentry
 
 
 def get_site_page(url, post=None, cookies=None):
