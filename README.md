@@ -21,4 +21,4 @@ To run the spiders execute `run.py`.
 Testing
 -------
 
-Run 'test.py' for app testing.
+Run `test.py` for app testing.
